@@ -3,6 +3,9 @@ name: Move Files
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   move:
     runs-on: ubuntu-latest
@@ -10,10 +13,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Move files to root
+      - name: Move site files from nested folder (skip .github)
         run: |
-          shopt -s dotglob
-          mv "RESEARCH WEB"/* .
+          set -e
+          SRC="RESEARCH WEB/RESEARCH WEB"
+          # Safety: only continue if the nested folder exists
+          if [ -d "$SRC" ]; then
+            shopt -s dotglob nullglob
+            for item in "$SRC"/*; do
+              base="$(basename "$item")"
+              if [ "$base" = ".github" ]; then
+                echo "Skipping .github directory"
+                continue
+              fi
+              mv -f "$item" .
+            done
+          fi
           rm -rf "RESEARCH WEB"
 
       - name: Commit changes
@@ -21,7 +36,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .
-          git commit -m "Move all files to root" || echo "No changes to commit"
+          git commit -m "Flatten folders: move site files to root" || echo "No changes to commit"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
