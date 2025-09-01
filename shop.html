@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order – CalciHeal</title>
+
+  <!-- Polished typography -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#fffbea;
+      --panel:#ffffff;
+      --ink:#2b2411;
+      --muted:#6a5c33;
+      --accent:#ffd60a;
+      --accent-2:#ffc300;
+      --accent-ink:#3b2d00;
+      --border:#eadfbb;
+      --soft:#fff9d9;
+      --pill:#fff6bd;
+      --focus:#ffdf4d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+      background:
+        radial-gradient(1000px 600px at -10% -10%, #fff1a8 0%, transparent 70%),
+        radial-gradient(900px 500px at 110% 20%, #fff0a3 0%, transparent 65%),
+        var(--bg);
+      margin:0; color:var(--ink);
+    }
+    .shop-container{
+      max-width:760px; margin:42px auto; background:var(--panel);
+      padding:24px 22px 28px; border-radius:16px; border:1px solid var(--border);
+      box-shadow:0 20px 50px rgba(0,0,0,.10), 0 2px 0 #fff inset;
+    }
+    h1{margin:0 0 10px;text-align:center;color:#b8860b;font-weight:800;letter-spacing:.2px}
+    p.note{
+      margin:0 0 18px;color:var(--muted);text-align:center;font-size:.95rem;
+      background:var(--soft);border:1px solid var(--border);padding:10px 12px;border-radius:10px
+    }
+    label{display:block;margin-top:16px;font-weight:700;color:#8b6b00;letter-spacing:.1px}
+    select,input,button{
+      width:100%;padding:12px 12px;margin-top:8px;border:1px solid #d9cfad;border-radius:10px;
+      font-size:15px;background:#fffdfa;color:var(--ink);transition:box-shadow .15s,border-color .15s,transform .02s
+    }
+    input::placeholder{color:#998a5b}
+    select:disabled,input:disabled{background:#faf7eb;color:#9e916b}
+    select:focus,input:focus,button:focus{
+      outline:none;border-color:var(--focus);box-shadow:0 0 0 4px rgba(255,214,10,.25)
+    }
+    .help{font-size:.88rem;color:#7a6b40;margin-top:6px}
+    .sr-only{position:absolute;left:-9999px}
+    .error{border-color:#cc0000;box-shadow:0 0 0 3px rgba(204,0,0,.10)}
+    .radio-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+    .radio-grid label{
+      display:flex;align-items:center;gap:10px;padding:12px 12px;background:#fffef7;border:1px solid #dfd2a7;border-radius:12px;
+      cursor:pointer;user-select:none;transition:transform .05s,box-shadow .15s
+    }
+    .radio-grid label:hover{box-shadow:0 6px 16px rgba(0,0,0,.06)}
+    .radio-grid input{accent-color:var(--accent);width:18px;height:18px}
+    .radio-grid label:has(input:checked){
+      border-color:#e6c53a;background:linear-gradient(180deg,#fffbd5,#fff6b4);box-shadow:0 8px 22px rgba(0,0,0,.08)
+    }
+    #priceDisplay{
+      margin-top:12px;background:var(--pill);border:1px solid #f0e19a;color:#5a4b17;border-radius:12px;
+      padding:10px 12px;font-weight:700;display:flex;flex-wrap:wrap;gap:.5rem .9rem;justify-content:center
+    }
+    #priceDisplay strong{color:#3a2a00}
+    button[type="submit"]{
+      background:linear-gradient(180deg,var(--accent),#ffde4d);color:var(--accent-ink);font-weight:800;border:none;margin-top:22px;
+      box-shadow:0 10px 24px rgba(247,196,0,.35),inset 0 1px 0 #fff7b3
+    }
+    button[type="submit"]:hover{background:linear-gradient(180deg,var(--accent-2),#ffe164)}
+    button[type="submit"]:active{transform:translateY(1px)}
+    #paymentDetails{background:#fffef3;border:1px dashed #d7c99c;border-radius:12px}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid #eee;border-top-color:#6e5d26;border-radius:50%;
+      animation:spin .7s linear infinite;margin-left:6px;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media (max-width:520px){button[type="submit"]{position:sticky;bottom:8px;z-index:2}.shop-container{padding-bottom:16px}}
+    @media (min-width:900px){.shop-container{padding:28px 30px 32px}select,input,button{font-size:16px}}
+
+    /* NEW: reliable utility for hiding elements */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="shop-container" role="form">
+    <h1>Order CalciHeal</h1>
+    <p class="note">Complete your shipping details. Cascading selects use the official Philippine Standard Geographic Code (PSGC).</p>
+
+    <form id="orderForm" action="https://formspree.io/f/myzdykno" method="POST" novalidate>
+      <!-- 1) FULL NAME -->
+      <label for="name">Full Name <span class="sr-only">(required)</span></label>
+      <input type="text" id="name" name="name" autocomplete="name" required placeholder="Juan Dela Cruz" />
+
+      <!-- Contact Number -->
+      <label for="contact">Contact Number</label>
+      <input
+        type="tel"
+        id="contact"
+        name="contact"
+        inputmode="tel"
+        placeholder="09XXXXXXXXX or +639XXXXXXXXX"
+        pattern="^(?:\+?63|0)9\d{9}$"
+        title="Use 09XXXXXXXXX or +639XXXXXXXXX"
+        required
+      />
+      <div class="help">PH format: 09XXXXXXXXX or +639XXXXXXXXX.</div>
+
+      <!-- 2) ADDRESS -->
+      <label for="province">Province <span id="provLoading" aria-live="polite" class="sr-only"></span></label>
+      <select id="province" name="province" required>
+        <option value="">-- Select province --</option>
+      </select>
+
+      <label for="city">City / Municipality <span id="cityLoading" aria-live="polite" class="sr-only"></span></label>
+      <select id="city" name="city" required disabled>
+        <option value="">-- Select city/municipality --</option>
+      </select>
+
+      <label for="barangay">Barangay <span id="brgyLoading" aria-live="polite" class="sr-only"></span></label>
+      <select id="barangay" name="barangay" required disabled>
+        <option value="">-- Select barangay --</option>
+      </select>
+
+      <label for="address">House No. / Street / Subdivision</label>
+      <input type="text" id="address" name="address" placeholder="Blk 3 Lot 5, Mabini St., Villa Subd." required />
+
+      <!-- 3) JAR SIZE (fixed to 15g) -->
+      <label>Jar Size</label>
+      <div class="help">15g (fixed)</div>
+      <input type="hidden" name="size" value="15g" />
+
+      <!-- 4) QUANTITY + Totals -->
+      <label for="quantitySelect">Quantity</label>
+      <select id="quantitySelect">
+        <option value="1">1 jar</option>
+        <option value="2">2 jars</option>
+        <option value="3">3 jars</option>
+        <option value="4">4 jars</option>
+        <option value="5">5 jars</option>
+        <option value="other">Other (specify)</option>
+      </select>
+      <input type="number" id="quantityOther" class="hidden" min="6" step="1" placeholder="Enter quantity (6 or more)" />
+      <input type="hidden" id="quantityValue" name="quantity" value="1" />
+
+      <div id="priceDisplay" class="help">
+        Price per jar: <strong>₱35</strong>
+        <span>•</span> Subtotal: <strong id="priceSubtotal">₱35</strong>
+        <span>•</span> Shipping: <strong id="priceShipping">₱50</strong>
+        <span>•</span> Grand Total: <strong id="priceTotal">₱85</strong>
+      </div>
+      <input type="hidden" id="subtotalField" name="subtotal" value="₱35" />
+      <input type="hidden" id="shippingField" name="shipping" value="₱50" />
+      <input type="hidden" id="totalField" name="total" value="₱85" />
+
+      <!-- 5) MODE OF PAYMENT (last) -->
+      <label id="payLabel">Mode of Payment</label>
+      <div role="group" aria-labelledby="payLabel" class="radio-grid">
+        <label><input type="radio" name="payment_method" value="COD" required /> Cash on Delivery</label>
+        <label><input type="radio" name="payment_method" value="GCash" /> GCash</label>
+        <label><input type="radio" name="payment_method" value="PayMaya" /> PayMaya</label>
+      </div>
+
+      <!-- Start hidden by default -->
+      <div id="paymentDetails" class="hidden" hidden
+           style="margin-top:8px;padding:10px;border:1px dashed #bbb;border-radius:12px">
+        <strong>Send payment via <span id="walletBrand">GCash/PayMaya</span> to:</strong>
+        <div>Account name: <code>J******** C******…</code></div>
+        <div>Number: <code id="walletNumber">09639717664</code></div>
+        <button type="button" id="copyWallet" style="margin-top:8px">Copy number</button>
+      </div>
+
+      <button type="submit">Place Order</button>
+    </form>
+  </div>
+
+  <script>
+    // ===== PSGC-backed cascading dropdowns =====
+    const API_BASE = 'https://psgc.gitlab.io/api';
+    const provinceEl = document.getElementById('province');
+    const cityEl = document.getElementById('city');
+    const brgyEl = document.getElementById('barangay');
+    const provLoading = document.getElementById('provLoading');
+    const cityLoading = document.getElementById('cityLoading');
+    const brgyLoading = document.getElementById('brgyLoading');
+    const state = { provinces: [], cities: [], municipalities: [] };
+
+    const option = (value, text) => {
+      const o = document.createElement('option'); o.value = value; o.textContent = text; return o;
+    };
+    const resetSelect = (el, placeholder, disable=true) => {
+      el.innerHTML = ''; el.appendChild(option('', placeholder));
+      el.value = ''; el.disabled = !!disable;
+    };
+    const showSpinner = (labelEl, on=true) => {
+      labelEl.innerHTML = on ? '<span class="spinner" aria-hidden="true"></span> Loading…' : '';
+    };
+
+    async function bootstrapLocations(){
+      try{
+        showSpinner(provLoading, true);
+        const [provsRes, citiesRes, muniRes] = await Promise.all([
+          fetch(`${API_BASE}/provinces/`),
+          fetch(`${API_BASE}/cities/`),
+          fetch(`${API_BASE}/municipalities/`)
+        ]);
+        state.provinces = await provsRes.json();
+        state.cities = await citiesRes.json();
+        state.municipalities = await muniRes.json();
+
+        state.provinces.sort((a,b)=> a.name.localeCompare(b.name,'en',{sensitivity:'base'}))
+          .forEach(p=> provinceEl.appendChild(option(p.code, p.name)));
+      } catch(err){
+        console.error('PSGC bootstrap failed', err);
+        alert('We had trouble loading location lists. You can still type the barangay in the address box.');
+      } finally{
+        showSpinner(provLoading, false);
+      }
+    }
+
+    provinceEl.addEventListener('change', ()=>{
+      resetSelect(cityEl, '-- Select city/municipality --');
+      resetSelect(brgyEl, '-- Select barangay --');
+      const pcode = provinceEl.value;
+      if(!pcode) return;
+
+      cityEl.disabled = false; showSpinner(cityLoading, true);
+      const localities = [
+        ...state.cities.filter(c=> c.provinceCode === pcode).map(c=> ({ code:c.code, name:c.name, kind:'city' })),
+        ...state.municipalities.filter(m=> m.provinceCode === pcode).map(m=> ({ code:m.code, name:m.name, kind:'municipality' }))
+      ].sort((a,b)=> a.name.localeCompare(b.name,'en',{sensitivity:'base'}));
+
+      localities.forEach(loc=>{
+        const o = option(`${loc.kind}:${loc.code}`, loc.name);
+        o.dataset.kind = loc.kind; o.dataset.code = loc.code;
+        cityEl.appendChild(o);
+      });
+      showSpinner(cityLoading, false);
+    });
+
+    cityEl.addEventListener('change', async ()=>{
+      resetSelect(brgyEl, '-- Select barangay --');
+      const val = cityEl.value;
+      if(!val) return;
+      const [kind, code] = val.split(':');
+      brgyEl.disabled = false; showSpinner(brgyLoading, true);
+      try{
+        const url = kind === 'city'
+          ? `${API_BASE}/cities/${code}/barangays/`
+          : `${API_BASE}/municipalities/${code}/barangays/`;
+        const res = await fetch(url);
+        const list = await res.json();
+        list.sort((a,b)=> a.name.localeCompare(b.name,'en',{sensitivity:'base'}))
+          .forEach(b=> brgyEl.appendChild(option(b.name, b.name)));
+      } catch(err){
+        console.error('Barangay fetch failed', err);
+        const o = option('OTHER', 'Barangay not listed — type in address box');
+        brgyEl.appendChild(o);
+      } finally{
+        showSpinner(brgyLoading, false);
+      }
+    });
+
+    // ===== Quantity + Totals (₱35 per jar + ₱50 shipping) =====
+    const UNIT_PRICE = 35;
+    const SHIPPING_FEE = 50;
+
+    const qtySelect = document.getElementById('quantitySelect');
+    const qtyOther = document.getElementById('quantityOther');
+    const qtyValue = document.getElementById('quantityValue');
+
+    const priceSubtotal = document.getElementById('priceSubtotal');
+    const priceShipping = document.getElementById('priceShipping');
+    const priceTotal = document.getElementById('priceTotal');
+
+    const subtotalField = document.getElementById('subtotalField');
+    const shippingField = document.getElementById('shippingField');
+    const totalField = document.getElementById('totalField');
+
+    function computeQty(){
+      if (qtySelect.value === 'other'){
+        const n = parseInt(qtyOther.value || '0', 10);
+        return isNaN(n) ? 0 : n;
+      }
+      return parseInt(qtySelect.value, 10) || 0;
+    }
+
+    function updateTotal(){
+      const q = computeQty();
+      const subtotal = q > 0 ? UNIT_PRICE * q : 0;
+      const shipping = q > 0 ? SHIPPING_FEE : 0;
+      const grand = subtotal + shipping;
+
+      priceSubtotal.textContent = subtotal ? ('₱' + subtotal.toLocaleString('en-PH')) : '—';
+      priceShipping.textContent = shipping ? ('₱' + shipping.toLocaleString('en-PH')) : '₱0';
+      priceTotal.textContent = grand ? ('₱' + grand.toLocaleString('en-PH')) : '—';
+
+      subtotalField.value = subtotal ? ('₱' + subtotal.toLocaleString('en-PH')) : '';
+      shippingField.value = shipping ? ('₱' + shipping.toLocaleString('en-PH')) : '₱0';
+      totalField.value = grand ? ('₱' + grand.toLocaleString('en-PH')) : '';
+    }
+
+    function syncQty(){
+      if (qtySelect.value === 'other'){
+        qtyOther.classList.remove('hidden');
+        qtyOther.required = true;
+        qtyValue.value = '';
+      } else {
+        qtyOther.classList.add('hidden');
+        qtyOther.required = false;
+        qtyOther.value = '';
+        qtyValue.value = qtySelect.value;
+      }
+      updateTotal();
+    }
+    qtySelect.addEventListener('change', syncQty);
+    qtyOther.addEventListener('input', updateTotal);
+    syncQty();
+
+    // ===== Payment details reveal + copy (robust show/hide) =====
+    const payRadios = document.querySelectorAll('input[name="payment_method"]');
+    const paymentDetails = document.getElementById('paymentDetails');
+    const walletBrandEl = document.getElementById('walletBrand');
+    const copyBtn = document.getElementById('copyWallet');
+    const walletNumber = document.getElementById('walletNumber')?.textContent || '';
+
+    function updatePaymentDetails(){
+      const selected = document.querySelector('input[name="payment_method"]:checked')?.value || '';
+      const show = (selected === 'GCash' || selected === 'PayMaya');
+
+      paymentDetails.classList.toggle('hidden', !show);
+      paymentDetails.toggleAttribute('hidden', !show);   // NEW: also toggle native attribute
+
+      if (show) walletBrandEl.textContent = selected;
+    }
+    payRadios.forEach(r=> r.addEventListener('change', updatePaymentDetails));
+    updatePaymentDetails();
+
+    copyBtn?.addEventListener('click', ()=>{
+      if (!walletNumber) return;
+      navigator.clipboard.writeText(walletNumber).then(()=>{
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=> copyBtn.textContent = 'Copy number', 1200);
+      });
+    });
+
+    // Friendly validation + AJAX submit then redirect to thankyou.html
+    const form = document.getElementById('orderForm');
+    form.addEventListener('submit', async (e) => {
+      if (!form.checkValidity()){
+        e.preventDefault();
+        [provinceEl, cityEl, brgyEl, document.getElementById('name'), document.getElementById('contact'), document.getElementById('address')]
+          .forEach(el => { el.classList.toggle('error', !el.checkValidity()); });
+        alert('Please complete all required fields in the correct format.');
+        return;
+      }
+
+      qtyValue.value = (qtySelect.value === 'other' && qtyOther.value) ? qtyOther.value : qtySelect.value;
+      updateTotal();
+
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+      } catch (err) {
+        console.error('Form submit error:', err);
+      }
+      window.location.href = 'thankyou.html';
+    });
+
+    bootstrapLocations();
+  </script>
+</body>
+</html>
+
+
+
