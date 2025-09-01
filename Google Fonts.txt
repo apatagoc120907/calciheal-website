@@ -1,0 +1,154 @@
+
+/* === GLOBAL STYLES === */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fffdf3;
+  color: #5c4500;
+  line-height: 1.6;
+}
+
+/* === NAVIGATION BAR === */
+nav {
+  background-color: #ffecb3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+nav .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #b8860b;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #5c4500;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: #e6be00;
+}
+
+/* === BUTTONS === */
+button, .back-button {
+  background-color: #ffd700;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, .back-button:hover {
+  background-color: #e6be00;
+}
+
+/* === CARDS / BOXES === */
+.card, .form-box, .contact-card, .question {
+  background-color: #fff9db;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin: 1.5rem auto;
+  max-width: 700px;
+  width: 100%;
+}
+
+h1, h2, h3 {
+  color: #b8860b;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* === FORM ELEMENTS === */
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+/* === QUIZ OPTIONS === */
+.options label {
+  display: block;
+  background-color: #fff8e1;
+  margin: 0.5rem auto;
+  padding: 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  max-width: 500px;
+  transition: background-color 0.3s ease;
+}
+
+.options label:hover {
+  background-color: #fff4b3;
+}
+
+/* === RESULT SECTION === */
+.result {
+  text-align: center;
+  margin-top: 3rem;
+  display: none;
+}
+
+.result img {
+  max-width: 200px;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+/* === FOOTER === */
+footer {
+  background-color: #ffecb3;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 4rem;
+  color: #5c4500;
+  font-size: 0.9rem;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+  }
+
+  nav ul {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .card, .form-box, .contact-card, .question {
+    padding: 1.5rem;
+  }
+
+  button, .back-button {
+    width: 100%;
+  }
+}
