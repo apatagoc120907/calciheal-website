@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gallery – CalciHeal</title>
+  <meta name="description" content="Meet the natural ingredients behind CalciHeal and learn how each one helps your skin recover." />
+
+  <style>
+    /* =====================
+       THEME TOKENS
+       ===================== */
+    :root{
+      /* Light theme defaults */
+      --bg:#fff8dc;           /* page background */
+      --card:#fff9db;         /* card & modal surfaces */
+      --ink:#1f2937;          /* main text (dark) */
+      --muted:#4b5563;        /* secondary text */
+      --brand:#b8860b;        /* golden accent */
+      --ring: rgba(184,134,11,.35);
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --radius:16px;
+
+      /* Unify borders & chips so they adapt */
+      --border:#eadbb0;
+      --chip-bg:#fff6d5;
+      --chip-active:#f0e6c8;
+      --btn-muted-bg:#fff5d6;
+      --btn-ink:#111827;      /* button label color on brand bg */
+      --link:#b8860b;
+    }
+
+    body[data-theme="dark"]{
+      /* Dark theme flips */
+      --bg:#141414;
+      --card:#1f1f1f;
+      --ink:#f9fafb;          /* text now light */
+      --muted:#d1d5db;
+      --brand:#facc15;        /* brighter gold for contrast */
+      --ring: rgba(234,179,8,.35);
+
+      --border:#333333;
+      --chip-bg:#262626;
+      --chip-active:#333333;
+      --btn-muted-bg:#2a2a2a;
+      --btn-ink:#111827;      /* still dark on gold (best contrast) */
+      --link:#facc15;
+    }
+
+    /* =====================
+       BASE LAYOUT
+       ===================== */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .container{max-width:1200px;margin:0 auto;padding:clamp(16px,3vw,32px)}
+
+    header{text-align:center;margin-bottom:clamp(16px,3vw,28px)}
+    .eyebrow{display:inline-block;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;color:var(--brand);background:rgba(184,134,11,.15);padding:.4rem .7rem;border-radius:999px}
+    h1{margin:.6rem 0 .25rem;font-size:clamp(1.8rem,4vw,2.6rem);color:var(--brand);line-height:1.1}
+    .lede{color:var(--muted);margin:.25rem 0 0}
+
+    /* =====================
+       CONTROLS
+       ===================== */
+    .controls{display:grid;gap:12px;justify-items:center;margin:22px 0 8px}
+
+    .search{display:grid;grid-template-columns:1fr auto;gap:8px;width:min(680px,100%);background:var(--card);border-radius:999px;padding:8px 10px 8px 14px;box-shadow:var(--shadow);align-items:center;border:1px solid var(--border)}
+    .search input{appearance:none;border:0;outline:0;background:transparent;padding:8px 4px;font-size:1rem;min-width:0;color:var(--ink)}
+    .btn{appearance:none;border:0;padding:.7rem 1rem;border-radius:999px;font-weight:600;background:#facc15;color:#111827;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;box-shadow:0 6px 14px rgba(184,134,11,.25)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+
+    .btn.secondary{background:var(--btn-muted-bg);color:var(--link);border:1px solid var(--border);box-shadow:var(--shadow)}
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 0}
+    .chip{appearance:none;border:1px solid var(--border);background:var(--chip-bg);padding:.45rem .7rem;border-radius:999px;cursor:pointer;font-weight:600;color:var(--ink)}
+    .chip[aria-pressed="true"]{background:var(--chip-active)}
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+    /* =====================
+       GALLERY GRID
+       ===================== */
+    .gallery{display:grid;gap:clamp(14px,2.5vw,22px);grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:clamp(12px,2vw,18px)}
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;display:grid;grid-template-rows:1fr auto;transition:transform .18s ease, box-shadow .18s ease;position:relative}
+    .card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.12)}
+
+    .media{position:relative;aspect-ratio:4/3;overflow:hidden}
+    .media img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .content{padding:14px 16px 16px;text-align:left}
+    .title{margin:0 0 4px;color:var(--brand);font-size:1.05rem}
+    .desc{margin:0;color:var(--muted);font-size:.95rem;line-height:1.5}
+
+    .ghost-link{position:absolute;inset:0;border:0;background:transparent;cursor:pointer}
+
+    .selecting .card{outline:2px dashed var(--ring)}
+    .card[data-selected="true"]{box-shadow:0 0 0 3px var(--ring), var(--shadow)}
+
+    .back-link{display:inline-flex;gap:8px;align-items:center;text-decoration:none;color:var(--link);font-weight:700;margin-top:26px}
+    .back-link:focus-visible{outline:3px solid var(--ring);outline-offset:3px;border-radius:10px}
+
+    /* =====================
+       MODALS
+       ===================== */
+    dialog.modal{width:min(920px,92vw);border:0;border-radius:var(--radius);padding:0;overflow:hidden;background:var(--card);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+    dialog::backdrop{background:rgba(0,0,0,.5)}
+
+    .modal__grid{display:grid;grid-template-columns:1.2fr 1fr;min-height:min(80vh,760px)}
+    @media (max-width: 860px){ .modal__grid{ grid-template-columns:1fr; min-height:auto; } }
+
+    .modal__media{background:#000;display:grid;place-items:center}
+    .modal__media img{width:100%;height:100%;object-fit:cover}
+
+    .modal__body{padding:clamp(18px,2.2vw,28px);position:relative}
+    .modal__title{color:var(--brand);margin:0 0 6px;font-size:clamp(1.2rem,2.2vw,1.6rem)}
+    .modal__text{color:var(--ink);line-height:1.7}
+    .modal__actions{display:flex;gap:8px;margin-top:16px}
+
+    .icon-btn{appearance:none;border:1px solid var(--border);width:38px;height:38px;border-radius:999px;background:var(--card);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .1s ease}
+    .icon-btn:hover{transform:translateY(-1px)}
+    .icon{width:18px;height:18px;display:inline-block}
+
+    /* Compare dialog */
+    dialog.compare{width:min(1000px,95vw);border:0;border-radius:16px;overflow:hidden;background:var(--card);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+    dialog.compare::backdrop{background:rgba(0,0,0,.5)}
+    .compare__wrap{padding:18px}
+    .compare__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .compare__card{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:12px}
+    .compare__card img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px}
+    .compare__title{margin:.4rem 0 .2rem;color:var(--brand)}
+    .compare__list{margin:.2rem 0 0;padding-left:18px}
+
+    @media (prefers-reduced-motion: reduce){.card,.btn,.icon-btn{transition:none}}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <span class="eyebrow">Ingredients</span>
+      <h1>CalciHeal Ingredients Gallery</h1>
+      <p class="lede">Get to know the natural components behind our healing ointment.</p>
+
+      <!-- Search / Filters / Actions -->
+      <div class="controls" role="search">
+        <form class="search" id="searchForm" onsubmit="event.preventDefault();">
+          <input id="q" name="q" type="search" placeholder="Search ingredients (e.g. aloe, vitamin)" autocomplete="off" aria-label="Search ingredients">
+          <button class="btn" type="button" onclick="filterCards()">Search</button>
+        </form>
+        <div class="chips" aria-label="Filter by category">
+          <button class="chip" type="button" data-chip="all" aria-pressed="true" onclick="toggleChip(this)">All</button>
+          <button class="chip" type="button" data-chip="Moisturizer" aria-pressed="false" onclick="toggleChip(this)">Moisturizer</button>
+          <button class="chip" type="button" data-chip="Antioxidant" aria-pressed="false" onclick="toggleChip(this)">Antioxidant</button>
+          <button class="chip" type="button" data-chip="Soothing" aria-pressed="false" onclick="toggleChip(this)">Soothing</button>
+          <button class="chip" type="button" data-chip="Mineral" aria-pressed="false" onclick="toggleChip(this)">Mineral</button>
+        </div>
+        <div class="toolbar">
+          <button class="btn secondary" type="button" id="selectToggle" aria-pressed="false" onclick="toggleSelectMode()">Select items</button>
+          <button class="btn" type="button" id="compareBtn" disabled onclick="openCompare()">Compare (0)</button>
+          <button class="btn secondary" type="button" id="themeToggle" onclick="toggleTheme()">Toggle theme</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="gallery" id="gallery" aria-label="Ingredients gallery">
+      <!-- Card: Eggshell Powder -->
+      <article class="card" data-index="0">
+        <div class="media">
+          <img src="image/egg.jpeg" alt="Macro shot of finely ground eggshell powder" loading="lazy" width="800" height="600">
+          <button class="ghost-link" aria-label="Open details for Eggshell Powder"></button>
+        </div>
+        <div class="content">
+          <h3 class="title">Eggshell Powder</h3>
+          <p class="desc">Rich natural source of calcium carbonate to support skin regeneration and repair.</p>
+        </div>
+      </article>
+
+      <!-- Card: Virgin Coconut Oil -->
+      <article class="card" data-index="1">
+        <div class="media">
+          <img src="image/vco.webp" alt="Virgin coconut oil in a glass jar with coconut pieces" loading="lazy" width="800" height="600">
+          <button class="ghost-link" aria-label="Open details for Virgin Coconut Oil"></button>
+        </div>
+        <div class="content">
+          <h3 class="title">Virgin Coconut Oil</h3>
+          <p class="desc">Deeply moisturizes and helps defend skin with lauric-acid antibacterial action.</p>
+        </div>
+      </article>
+
+      <!-- Card: Vitamin E (Sunflower Oil) -->
+      <article class="card" data-index="2">
+        <div class="media">
+          <img src="image/so.webp" alt="Sunflower oil bottle with sunflower in background" loading="lazy" width="800" height="600">
+          <button class="ghost-link" aria-label="Open details for Vitamin E (Sunflower Oil)"></button>
+        </div>
+        <div class="content">
+          <h3 class="title">Vitamin E (Sunflower Oil)</h3>
+          <p class="desc">Antioxidant support that nourishes tissue and helps reduce the look of scars.</p>
+        </div>
+      </article>
+
+      <!-- Card: Aloe Vera Gel -->
+      <article class="card" data-index="3">
+        <div class="media">
+          <img src="image/av.jpg" alt="Fresh aloe vera gel on sliced aloe leaf" loading="lazy" width="800" height="600">
+          <button class="ghost-link" aria-label="Open details for Aloe Vera Gel"></button>
+        </div>
+        <div class="content">
+          <h3 class="title">Aloe Vera Gel</h3>
+          <p class="desc">Soothes irritation, hydrates, and creates an ideal environment for healing.</p>
+        </div>
+      </article>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </main>
+
+  <!-- Accessible modal using <dialog> -->
+  <dialog class="modal" id="ingredientModal" aria-labelledby="modalTitle" aria-describedby="modalDescription">
+    <div class="modal__grid">
+      <figure class="modal__media">
+        <img id="modalImage" alt="" />
+      </figure>
+      <section class="modal__body">
+        <h2 id="modalTitle" class="modal__title"></h2>
+        <p id="modalDescription" class="modal__text"></p>
+        <div class="modal__actions">
+          <button class="icon-btn" type="button" title="Previous (←)" aria-label="Previous" id="prevBtn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn" type="button" title="Next (→)" aria-label="Next" id="nextBtn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="btn" type="button" id="closeBtn" aria-label="Close">Close</button>
+        </div>
+      </section>
+    </div>
+  </dialog>
+
+  <!-- Compare dialog -->
+  <dialog class="compare" id="compareDialog" aria-labelledby="compareTitle">
+    <div class="compare__wrap">
+      <h2 id="compareTitle" class="modal__title">Compare ingredients</h2>
+      <div class="compare__grid" id="compareGrid"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn secondary" id="clearBtn">Clear</button>
+        <button class="btn" id="closeCompareBtn">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // ===== Data model for modal + compare content =====
+    const items = [
+      {
+        title: 'Eggshell Powder',
+        image: 'image/egg.jpeg',
+        alt: 'Macro shot of finely ground eggshell powder',
+        category: 'Mineral',
+        bullets: ['Calcium carbonate supports regeneration', 'Aids blood clotting', 'Strengthens new skin formation'],
+        description: `Eggshell powder is a rich, natural source of calcium carbonate, which helps boost skin regeneration and collagen production. The calcium aids in blood clotting, promotes faster tissue repair, and strengthens new skin formation. It also upcycles kitchen waste into healing power.`,
+      },
+      {
+        title: 'Virgin Coconut Oil',
+        image: 'image/vco.webp',
+        alt: 'Virgin coconut oil in a glass jar with coconut pieces',
+        category: 'Moisturizer',
+        bullets: ['Lauric acid antibacterial action', 'Deep moisturization', 'Protective barrier for wounds'],
+        description: `Virgin coconut oil (VCO) contains medium-chain fatty acids like lauric acid with antibacterial properties. It deeply moisturizes the skin, creates a protective barrier, and helps prevent infection while supporting faster wound closure—gentle enough for sensitive skin.`,
+      },
+      {
+        title: 'Vitamin E (Sunflower Oil)',
+        image: 'image/so.webp',
+        alt: 'Sunflower oil bottle with sunflower in background',
+        category: 'Antioxidant',
+        bullets: ['Potent antioxidant support', 'Helps reduce scar formation', 'Maintains elasticity'],
+        description: `Vitamin E is a potent antioxidant that supports skin cell regeneration and helps reduce scar formation. In CalciHeal, it comes from non‑comedogenic sunflower oil, rich in essential fatty acids to nourish tissues and maintain elasticity.`,
+      },
+      {
+        title: 'Aloe Vera Gel',
+        image: 'image/av.jpg',
+        alt: 'Fresh aloe vera gel on sliced aloe leaf',
+        category: 'Soothing',
+        bullets: ['Reduces inflammation', 'Hydrates damaged skin', 'Supports tissue regeneration'],
+        description: `Aloe vera gel is packed with vitamins, minerals, and amino acids that soothe irritation, reduce inflammation, and hydrate damaged skin. It cools, relieves discomfort, and provides a moist environment for healing; its polysaccharides support tissue regeneration.`,
+      },
+    ];
+
+    // ===== Modal logic =====
+    const modal = document.getElementById('ingredientModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDescription');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    let currentIndex = 0;
+
+    function openModal(index){
+      currentIndex = index;
+      const item = items[currentIndex];
+      modalTitle.textContent = item.title;
+      modalImage.src = item.image;
+      modalImage.alt = item.alt || item.title;
+      modalDesc.textContent = item.description;
+
+      if (typeof modal.showModal === 'function') { modal.showModal(); } else { modal.setAttribute('open', ''); }
+    }
+    function closeModal(){ if (typeof modal.close === 'function') { modal.close(); } else { modal.removeAttribute('open'); } }
+    function nextItem(){ currentIndex = (currentIndex + 1) % items.length; openModal(currentIndex); }
+    function prevItem(){ currentIndex = (currentIndex - 1 + items.length) % items.length; openModal(currentIndex); }
+
+    prevBtn.addEventListener('click', prevItem);
+    nextBtn.addEventListener('click', nextItem);
+    closeBtn.addEventListener('click', closeModal);
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e)=>{
+      if (modal.open) {
+        if (e.key === 'Escape') return closeModal();
+        if (e.key === 'ArrowRight') return nextItem();
+        if (e.key === 'ArrowLeft') return prevItem();
+      }
+      // Global search & compare shortcut
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); document.getElementById('q').focus(); }
+      if ((e.key === 'c' || e.key === 'C') && !modal.open) { openCompare(); }
+    });
+
+    // Close modal on backdrop click
+    modal.addEventListener('click', (e)=>{
+      const rect = modal.getBoundingClientRect();
+      const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      if (!inside) closeModal();
+    });
+
+    // ===== Search & chips =====
+    function toggleChip(btn){
+      document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      filterCards();
+    }
+
+    function filterCards(){
+      const query = (document.getElementById('q').value || '').trim().toLowerCase();
+      const activeChip = document.querySelector('.chip[aria-pressed="true"][data-chip]:not([data-chip="all"])');
+      const category = activeChip ? activeChip.dataset.chip : 'all';
+      document.querySelectorAll('.gallery .card').forEach(card =>{
+        const idx = Number(card.getAttribute('data-index'));
+        const item = items[idx];
+        const text = (card.textContent || '').toLowerCase();
+        const matchesQuery = !query || text.includes(query);
+        const matchesCat = category === 'all' || (item.category === category);
+        card.style.display = (matchesQuery && matchesCat) ? '' : 'none';
+      });
+    }
+
+    // Expose to inline handlers
+    window.toggleChip = toggleChip;
+    window.filterCards = filterCards;
+
+    // ===== Selection & Compare =====
+    let selecting = false;
+    const selected = new Set();
+
+    function toggleSelectMode(){
+      selecting = !selecting;
+      document.getElementById('selectToggle').setAttribute('aria-pressed', String(selecting));
+      document.body.classList.toggle('selecting', selecting);
+      updateCompareBtn();
+    }
+    function updateCompareBtn(){
+      const btn = document.getElementById('compareBtn');
+      btn.textContent = `Compare (${selected.size})`;
+      btn.disabled = selected.size < 2;
+    }
+    function toggleCardSelection(idx){
+      if (selected.has(idx)) selected.delete(idx); else {
+        if (selected.size >= 3) { alert('You can compare up to 3 items.'); return; }
+        selected.add(idx);
+      }
+      const card = document.querySelector(`.card[data-index="${idx}"]`);
+      if (card) card.setAttribute('data-selected', selected.has(idx));
+      updateCompareBtn();
+    }
+
+    function openCompare(){
+      if (selected.size < 2) return;
+      const dialog = document.getElementById('compareDialog');
+      const grid = document.getElementById('compareGrid');
+      grid.innerHTML = '';
+      [...selected].forEach(idx =>{
+        const it = items[idx];
+        const el = document.createElement('article');
+        el.className = 'compare__card';
+        el.innerHTML = `
+          <img src="${it.image}" alt="${it.alt || it.title}">
+          <h3 class="compare__title">${it.title}</h3>
+          <p style="margin:.2rem 0 .4rem; color:var(--muted)">${it.category}</p>
+          <ul class="compare__list">${(it.bullets||[]).map(b=>`<li>${b}</li>`).join('')}</ul>
+        `;
+        grid.appendChild(el);
+      });
+      dialog.showModal();
+    }
+
+    function clearSelection(){
+      // Remove all selections and visual highlights
+      selected.clear();
+      document.querySelectorAll('.card[data-selected="true"]').forEach(c=>c.removeAttribute('data-selected'));
+      updateCompareBtn();
+      // If the compare dialog is open, clear its content and close it
+      const dialog = document.getElementById('compareDialog');
+      const grid = document.getElementById('compareGrid');
+      if (grid) grid.innerHTML = '<p class="empty" style="margin:8px 0;color:var(--muted)">No items selected.</p>';
+      if (dialog && dialog.open) dialog.close();
+    }
+
+    // Wire compare dialog buttons
+    document.getElementById('clearBtn').addEventListener('click', clearSelection);
+    document.getElementById('closeCompareBtn').addEventListener('click', ()=>document.getElementById('compareDialog').close());
+
+    // Attach selection behavior to cards (intercept before ghost link)
+    document.querySelectorAll('.gallery .card').forEach((card, idx)=>{
+      card.addEventListener('click', (e)=>{
+        if (!selecting) return; 
+        e.preventDefault();
+        e.stopPropagation();
+        toggleCardSelection(idx);
+      }, { capture: true });
+    });
+
+    // Make the ghost-link respect select mode or open modal
+    document.querySelectorAll('.ghost-link').forEach((btn)=>{
+      btn.addEventListener('click', (e)=>{
+        const idx = Number(btn.closest('.card').dataset.index);
+        e.preventDefault();
+        e.stopPropagation();
+        if (selecting) toggleCardSelection(idx); else openModal(idx);
+      });
+    });
+
+    // Theme toggle
+    function toggleTheme(){
+      const t = document.body.getAttribute('data-theme');
+      document.body.setAttribute('data-theme', t === 'dark' ? 'light' : 'dark');
+    }
+    window.toggleSelectMode = toggleSelectMode;
+    window.openCompare = openCompare;
+    window.toggleTheme = toggleTheme;
+  </script>
+</body>
+</html>
