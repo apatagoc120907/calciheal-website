@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>How It Works – CalciHeal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      /* Light */
+      --ink:#3e2f00; --muted:#6f5a21;
+      --gold:#ffd60a; --gold-2:#ffc300;
+      --panel: rgba(255,255,240,.82);
+      --panel-solid:#fffef6;
+      --chip:#fffde7; --chip-br:#e7d79a;
+      --br:#f3e7a8; --ok:#1a7f37; --warn:#b83d00;
+
+      --surface-1:#fffef6;
+      --surface-2:#fffdf0;
+      --surface-3:#fff9db;
+      --link:#b8860b;
+      --shadow-sm:0 8px 18px rgba(0,0,0,.06);
+      --shadow-md:0 14px 32px rgba(0,0,0,.18);
+      --ring:0 0 0 3px rgba(234,179,8,.35);
+    }
+
+    body[data-theme="dark"]{
+      /* Dark */
+      --ink:#f3f4f6; --muted:#cbd5e1;
+      --gold:#facc15; --gold-2:#eab308;
+      --panel: rgba(0,0,0,.55);
+      --panel-solid:#121212;
+      --chip:#262626; --chip-br:#333333;
+      --br:#333333; --ok:#22c55e; --warn:#f97316;
+
+      --surface-1:#1a1a1a;
+      --surface-2:#1f1f1f;
+      --surface-3:#262626;
+      --link:#facc15;
+      --shadow-sm:0 8px 18px rgba(0,0,0,.28);
+      --shadow-md:0 14px 32px rgba(0,0,0,.4);
+      --ring:0 0 0 3px rgba(250,204,21,.35);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:'Poppins',system-ui,sans-serif; color:var(--ink);
+      min-height:100vh; display:flex; flex-direction:column; align-items:center;
+      background:url("Image/lchick.jpg") center/cover no-repeat fixed;
+      text-align:center; padding:18px; opacity:0; transition:opacity .8s ease-in-out;
+      position:relative;
+    }
+    /* dark overlay to keep text readable on bg photo */
+    body::before{
+      content:""; position:fixed; inset:0; pointer-events:none;
+      background:
+        radial-gradient(60% 60% at 50% 20%, rgba(255,214,10,.22), transparent 60%),
+        linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15));
+      transition: background .3s ease;
+    }
+    body[data-theme="dark"]::before{
+      background:
+        radial-gradient(60% 60% at 50% 20%, rgba(250,204,21,.18), transparent 60%),
+        linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.35));
+    }
+    body.fade-in{opacity:1}
+
+    /* theme toggle */
+    .theme-toggle{
+      position:fixed; right:14px; top:14px; z-index:10;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:.45rem .7rem; border-radius:999px; font-weight:700; cursor:pointer;
+      background: rgba(0,0,0,.45); color:#fff; border:1px solid rgba(255,255,255,.25);
+      backdrop-filter: blur(4px);
+    }
+    body[data-theme="dark"] .theme-toggle{
+      background: rgba(255,255,255,.12); color:#fff; border-color: rgba(255,255,255,.25);
+    }
+
+    .wrap{
+      width:100%; max-width:1050px; margin:auto;
+      background:var(--panel); backdrop-filter:blur(3px);
+      border:1px solid var(--br); border-radius:16px;
+      box-shadow:var(--shadow-md); overflow:hidden;
+    }
+
+    /* HERO */
+    .hero{ padding:26px 18px 6px }
+    .hero h1{ margin:.2rem 0 .4rem; font-size:clamp(1.9rem,3.5vw,2.6rem); color:var(--link); text-shadow:0 1px 0 #0000 }
+    .hero p{ margin:.1rem auto .6rem; color:var(--ink); opacity:.9; max-width:760px }
+    .badges{ display:flex; flex-wrap:wrap; gap:.45rem; justify-content:center; margin:.4rem 0 1rem }
+    .badge{ background:var(--chip); border:1px solid var(--chip-br); color:var(--link); border-radius:999px; padding:.3rem .6rem; font-weight:600 }
+
+    .section{ padding:14px 16px 22px }
+    .reveal{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease }
+    .reveal.on{ opacity:1; transform:none }
+
+    /* TIMELINE */
+    .timeline{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:8px }
+    .step{
+      text-align:left; background:var(--surface-2); border:1px solid var(--br); border-radius:12px; padding:.9rem;
+      display:flex; gap:.6rem; align-items:flex-start; cursor:pointer; transition:transform .15s, box-shadow .15s;
+      color:var(--ink);
+    }
+    .step:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.1) }
+    .dot{ width:26px; height:26px; border-radius:999px; background:var(--gold); color:#3a2a00; font-weight:800; display:grid; place-items:center; flex:0 0 26px }
+    .step h3{ margin:.1rem 0 .25rem; font-size:1.02rem; color:var(--link) }
+    .step small{ color:var(--muted) }
+
+    /* MYTH vs FACT */
+    .mvf{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; max-width:920px; margin:10px auto 0 }
+    .flip{ perspective:1000px; height:150px }
+    .flip-inner{ position:relative; height:100%; transform-style:preserve-3d; transition: transform .55s }
+    .flip:hover .flip-inner{ transform: rotateY(180deg) }
+    .face{
+      position:absolute; inset:0; padding:14px; display:grid; place-items:center; text-align:center;
+      border:1px solid var(--br); border-radius:12px; background:var(--surface-1); backface-visibility:hidden;
+      box-shadow:var(--shadow-sm); color:var(--ink);
+    }
+    .face h4{ margin:.2rem 0 .25rem; color:var(--link) }
+    .back{ transform: rotateY(180deg); background:var(--surface-3); color:var(--ink) }
+
+    /* INGREDIENT SPOTLIGHT */
+    .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; max-width:920px; margin:10px auto 0 }
+    .card{ background:var(--surface-1); border:1px solid var(--br); border-radius:12px; padding:12px; text-align:left; box-shadow:0 8px 16px rgba(0,0,0,.05); color:var(--ink) }
+    .card h4{ margin:.1rem 0 .3rem; color:var(--link) }
+    .mini{ font-size:.93rem; line-height:1.55; margin:0; color:var(--ink) }
+    .fact{ margin-top:.45rem; font-size:.88rem; color:var(--muted); background:var(--surface-2); border:1px dashed var(--br); border-radius:10px; padding:.45rem .6rem }
+
+    /* ===== CARE COACH ===== */
+    .coach{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; max-width:920px; margin:10px auto 0 }
+    .coach-card{ background:var(--surface-1); border:1px solid var(--br); border-radius:14px; box-shadow:0 8px 18px rgba(0,0,0,.06); overflow:hidden; text-align:left; color:var(--ink) }
+    .coach-head{ padding:12px 14px; background:var(--surface-2); border-bottom:1px solid var(--br); font-weight:700; color:var(--link) }
+    .coach-body{ padding:12px 14px }
+
+    .scenario-grid{ display:grid; grid-template-columns:1fr; gap:8px }
+    .scenario{ border:1px solid var(--br); border-radius:10px; padding:.6rem .75rem; background:var(--panel-solid); cursor:pointer; color:var(--ink) }
+    .scenario:hover{ background:var(--surface-3) }
+    .result{ margin-top:10px; padding:.6rem .75rem; border-radius:10px; border:1px solid var(--br); background:var(--panel-solid); color:var(--ink) }
+    .result.ok{ border-color:#bfe3c9; background:#f2fbf5; color:var(--ok) }
+    .result.warn{ border-color:#f1c3a9; background:#fff4ef; color:var(--warn) }
+
+    .checklist{ display:grid; gap:8px; margin-top:6px }
+    .check{ display:flex; gap:.6rem; align-items:flex-start; padding:.55rem .7rem; border:1px solid var(--br); border-radius:10px; background:var(--panel-solid); color:var(--ink) }
+    .progress{ height:8px; background:var(--surface-3); border-radius:999px; overflow:hidden; margin-top:10px; border:1px solid var(--br) }
+    .progress > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--gold),#ffe57f) }
+
+    /* Buttons under coach */
+    .cta-row{ display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; margin:12px 0 6px }
+    .cta-link{
+      padding:.7rem 1.1rem; border-radius:10px; border:none; font-weight:800; text-decoration:none; display:inline-block;
+      background:var(--gold); color:#3a2a00;
+    }
+    .cta-link.ghost{ background:var(--surface-2); border:1px solid var(--br); color:var(--muted) }
+
+    /* MODAL */
+    .modal{
+      position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); z-index:50; padding:16px;
+    }
+    .modal.open{ display:grid }
+    .modal-card{
+      width:min(680px, 96vw); background:var(--surface-2); border-radius:14px; border:1px solid var(--br); padding:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,.3); text-align:left; color:var(--ink);
+    }
+    .modal-card img{ width:100%; max-height:340px; object-fit:contain; border-radius:10px; margin-bottom:10px; background:#000 }
+    .modal-head{ display:flex; align-items:center; justify-content:space-between; gap:8px }
+    .modal-title{ margin:0; font-size:1.2rem; color:var(--link) }
+    .x{ background:var(--chip); border:1px solid var(--chip-br); border-radius:8px; padding:.35rem .6rem; cursor:pointer; color:var(--ink) }
+
+    @media (max-width:640px){
+      .step{ align-items:center }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+    🌙 Toggle theme
+  </button>
+
+  <div class="wrap">
+    <!-- HERO -->
+    <header class="hero">
+      <h1>How CalciHeal Works</h1>
+      <p class="reveal">Upcycled eggshell powder + virgin coconut oil + aloe vera + sunflower oil—crafted for everyday <em>minor</em> cuts, scrapes, and insect bites.</p>
+      <div class="badges reveal">
+        <span class="badge">Upcycled</span>
+        <span class="badge">Zero-Waste</span>
+        <span class="badge">PH-Made</span>
+      </div>
+    </header>
+
+    <!-- 4 PHASES -->
+    <section class="section">
+      <h2 class="reveal" style="margin:.2rem 0 .4rem; color:var(--link)">🩹 The 4 Stages of Wound Healing</h2>
+      <div class="timeline">
+        <button class="step reveal" data-phase="1">
+          <span class="dot">1</span>
+          <div><h3>Hemostasis</h3><small>Clot forms a protective plug.</small></div>
+        </button>
+        <button class="step reveal" data-phase="2">
+          <span class="dot">2</span>
+          <div><h3>Inflammatory</h3><small>WBCs clear debris & bacteria.</small></div>
+        </button>
+        <button class="step reveal" data-phase="3">
+          <span class="dot">3</span>
+          <div><h3>Proliferation</h3><small>New tissue & vessels develop.</small></div>
+        </button>
+        <button class="step reveal" data-phase="4">
+          <span class="dot">4</span>
+          <div><h3>Remodeling</h3><small>Tissue strengthens; scar matures.</small></div>
+        </button>
+      </div>
+    </section>
+
+    <!-- MYTH vs FACT -->
+    <section class="section">
+      <h2 class="reveal" style="margin:.2rem 0 .4rem; color:var(--link)">🤔 Myth vs Fact</h2>
+      <div class="mvf">
+        <div class="flip reveal" title="Hover / tap">
+          <div class="flip-inner">
+            <div class="face">
+              <h4>Myth: “Thicker is better.”</h4>
+              <p class="mini">A heavy coat heals faster.</p>
+            </div>
+            <div class="face back">
+              <h4>Fact</h4>
+              <p class="mini">A <strong>thin layer</strong> protects while letting skin breathe and settle.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flip reveal" title="Hover / tap">
+          <div class="flip-inner">
+            <div class="face">
+              <h4>Myth: “Eggshells are just waste.”</h4>
+              <p class="mini">No skincare benefit.</p>
+            </div>
+            <div class="face back">
+              <h4>Fact</h4>
+              <p class="mini"><strong>Calcium carbonate</strong> adds a light, protective feel.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flip reveal" title="Hover / tap">
+          <div class="flip-inner">
+            <div class="face">
+              <h4>Myth: “Oils clog instantly.”</h4>
+              <p class="mini">All oils are bad for skin.</p>
+            </div>
+            <div class="face back">
+              <h4>Fact</h4>
+              <p class="mini"><strong>VCO + sunflower</strong> help maintain comfortable moisture.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INGREDIENT SPOTLIGHT -->
+    <section class="section">
+      <h2 class="reveal" style="margin:.2rem 0 .4rem; color:var(--link)">🌿 Ingredient Spotlight</h2>
+      <div class="grid">
+        <article class="card reveal">
+          <h4>Eggshell Powder</h4>
+          <p class="mini">Finely milled calcium carbonate adds a gentle, protective finish.</p>
+          <div class="fact">Micro-fact: eggshell is ~94–97% calcium carbonate.</div>
+        </article>
+        <article class="card reveal">
+          <h4>Virgin Coconut Oil</h4>
+          <p class="mini">Lauric-acid-rich base that supports daily skin comfort.</p>
+          <div class="fact">Common in PH daily care products.</div>
+        </article>
+        <article class="card reveal">
+          <h4>Aloe Vera</h4>
+          <p class="mini">Cooling touch to calm minor scrapes.</p>
+          <div class="fact">Pairs well with light occlusives.</div>
+        </article>
+        <article class="card reveal">
+          <h4>Sunflower Oil</h4>
+          <p class="mini">Linoleic acid helps support the skin barrier sensation.</p>
+          <div class="fact">Gentle profile widely used in baby care.</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- CARE COACH -->
+    <section class="section">
+      <h2 class="reveal" style="margin:.2rem 0 .4rem; color:var(--link)">🧑‍⚕️ Care Coach</h2>
+      <div class="coach">
+        <!-- Checker -->
+        <div class="coach-card reveal" id="checker">
+          <div class="coach-head">Can I use CalciHeal for…</div>
+          <div class="coach-body">
+            <div class="scenario-grid">
+              <button class="scenario" data-ok="true">Minor cut / scrape</button>
+              <button class="scenario" data-ok="true">Insect bite</button>
+              <button class="scenario" data-ok="false">Burn (fresh or blistered)</button>
+              <button class="scenario" data-ok="false">Deep / large wound</button>
+              <button class="scenario" data-ok="false">Signs of infection (pus, fever, spreading redness)</button>
+            </div>
+            <div class="result" id="checkResult" aria-live="polite" style="display:none"></div>
+            <div class="mini" style="margin-top:8px; color:var(--muted)">CalciHeal is intended for <em>minor</em> skin issues only.</div>
+          </div>
+        </div>
+
+        <!-- Checklist -->
+        <div class="coach-card reveal" id="list">
+          <div class="coach-head">Do ✓ & Don’t ✗</div>
+          <div class="coach-body">
+            <div class="checklist" id="checks">
+              <label class="check"><input type="checkbox"> Rinse the minor wound with clean water; pat dry—no rubbing.</label>
+              <label class="check"><input type="checkbox"> Apply a <strong>thin</strong> layer of CalciHeal to cover the area.</label>
+              <label class="check"><input type="checkbox"> Optional: cover with a clean bandage if it may rub on clothes.</label>
+              <label class="check"><input type="checkbox"> Reapply 1–2× daily; stop use if irritation occurs.</label>
+              <label class="check"><input type="checkbox"> Don’t use on deep, infected, or large wounds; seek care.</label>
+            </div>
+            <div class="progress" aria-label="Checklist progress"><span id="progBar"></span></div>
+            <div class="mini" id="progText" style="margin-top:6px">0% complete</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-row reveal">
+        <a class="cta-link ghost" href="index.html">← Back to Home</a>
+        <a class="cta-link" href="shop.html">Order CalciHeal</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-labelledby="mTitle">
+    <div class="modal-card" role="document">
+      <div class="modal-head">
+        <h3 id="mTitle" class="modal-title">Phase</h3>
+        <button class="x" type="button" id="closeModal" aria-label="Close">✕</button>
+      </div>
+      <img id="mImg" src="" alt="" />
+      <p id="mDesc" style="margin:.3rem 0 0"></p>
+    </div>
+  </div>
+
+  <script>
+    // Theme init: respect system preference & saved choice
+    (function initTheme(){
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      document.body.setAttribute('data-theme', theme);
+    })();
+    document.getElementById('themeToggle').addEventListener('click', ()=>{
+      const cur = document.body.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+
+    // Fade-in
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.classList.add("fade-in");
+    });
+
+    // Smooth link transitions
+    document.querySelectorAll('a[href]').forEach(link => {
+      link.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href && !href.startsWith("#") && !this.target) {
+          e.preventDefault();
+          document.body.classList.remove("fade-in");
+          document.body.style.opacity = 0;
+          setTimeout(() => { window.location.href = href; }, 350);
+        }
+      });
+    });
+
+    // Scroll reveal
+    const ob = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{
+        if(en.isIntersecting){ en.target.classList.add('on'); ob.unobserve(en.target); }
+      });
+    }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>ob.observe(el));
+
+    // Modal data
+    const PHASES = {
+      1:{title:"Phase 1 — Hemostasis", img:"Image/p1.png", alt:"Hemostasis diagram", desc:"Blood vessels constrict; clot forms a protective plug."},
+      2:{title:"Phase 2 — Inflammatory", img:"Image/p2.png", alt:"Inflammatory stage diagram", desc:"White blood cells clear bacteria and debris."},
+      3:{title:"Phase 3 — Proliferation", img:"Image/p3.png", alt:"Proliferation stage diagram", desc:"New tissue & vessels develop; wound begins to close."},
+      4:{title:"Phase 4 — Remodeling", img:"Image/p4.png", alt:"Remodeling stage diagram", desc:"Tissue strengthens; scar matures over time."}
+    };
+    const modal = document.getElementById('modal');
+    const mImg  = document.getElementById('mImg');
+    const mDesc = document.getElementById('mDesc');
+    const mTitle= document.getElementById('mTitle');
+    const closeBtn = document.getElementById('closeModal');
+    function openModal(phase){
+      const d = PHASES[phase]; if(!d) return;
+      mImg.src=d.img; mImg.alt=d.alt; mTitle.textContent=d.title; mDesc.textContent=d.desc;
+      modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); closeBtn.focus();
+    }
+    function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); setTimeout(()=>{mImg.src=""},200); }
+    document.querySelectorAll('.step').forEach(btn=> btn.addEventListener('click', ()=> openModal(btn.dataset.phase)));
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('open')) closeModal(); });
+
+    // Care Coach — Checker
+    const result = document.getElementById('checkResult');
+    document.querySelectorAll('#checker .scenario').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const ok = btn.dataset.ok === 'true';
+        result.style.display = 'block';
+        result.className = 'result ' + (ok ? 'ok' : 'warn');
+        result.textContent = ok
+          ? 'Yes — CalciHeal can be used for minor cuts, scrapes, and insect bites. Apply a thin layer.'
+          : 'Not recommended — For burns, deep/large wounds, or signs of infection, seek professional care.';
+      });
+    });
+
+    // Care Coach — Checklist progress
+    const checks = [...document.querySelectorAll('#checks input[type="checkbox"]')];
+    const bar = document.getElementById('progBar');
+    const progText = document.getElementById('progText');
+    function renderProgress(){
+      const done = checks.filter(c=>c.checked).length;
+      const pct = Math.round(done / checks.length * 100);
+      bar.style.width = pct + '%';
+      progText.textContent = pct + '% complete';
+    }
+    checks.forEach(c=> c.addEventListener('change', renderProgress));
+    renderProgress();
+  </script>
+</body>
+</html>
